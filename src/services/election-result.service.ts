@@ -16,9 +16,44 @@ export class ElectionResultService {
     result_image_public_id?: string;
     notes?: string;
   }): Promise<{ success: boolean; error: string | null; id?: string }> {
+    let wardUuid = data.ward_id;
+    let pollingUnitUuid = data.polling_unit_id;
+
+    if (wardUuid && !wardUuid.includes("-")) {
+      const { data: wardData } = await (supabase as any)
+        .from("wards")
+        .select("id")
+        .eq("ward_number", wardUuid)
+        .maybeSingle();
+      if (wardData?.id) wardUuid = wardData.id;
+    }
+
+    if (pollingUnitUuid && pollingUnitUuid.includes("-")) {
+      const [wardNum, unitNum] = pollingUnitUuid.split("-");
+      const { data: wardData } = await (supabase as any)
+        .from("wards")
+        .select("id")
+        .eq("ward_number", wardNum)
+        .maybeSingle();
+      
+      if (wardData?.id) {
+        const { data: puData } = await (supabase as any)
+          .from("polling_units")
+          .select("id")
+          .eq("ward_id", wardData.id)
+          .eq("unit_number", unitNum)
+          .maybeSingle();
+        if (puData?.id) pollingUnitUuid = puData.id;
+      }
+    }
+
     const { data: result, error } = await (supabase as any)
       .from("election_results")
-      .insert(data)
+      .insert({
+        ...data,
+        ward_id: wardUuid,
+        polling_unit_id: pollingUnitUuid
+      })
       .select()
       .single();
 

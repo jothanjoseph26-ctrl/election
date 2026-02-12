@@ -75,9 +75,9 @@ export default function AgentDashboard() {
         phone_number: agent?.phone_number || "",
         ward_number: agent?.ward_number || "",
         ward_name: agent?.ward_name || ward?.wardName || "",
-        polling_unit_id: (agent as any)?.polling_unit_id || "",
-        account_number: (agent as any)?.account_number || "",
-        bank_name: (agent as any)?.bank_name || "",
+        polling_unit_id: agent?.polling_unit_id || "",
+        account_number: agent?.account_number || "",
+        bank_name: agent?.bank_name || "",
       });
     } catch (error) {
       console.error("Error loading data:", error);
@@ -122,10 +122,11 @@ export default function AgentDashboard() {
     setSaving(false);
   };
 
-  // Check if profile is complete
-  const isProfileComplete = agent?.ward_number && (agent as any)?.polling_unit_id;
+  // Check if profile is complete - use profile state which is updated by loadData
+  const isProfileComplete = !!(profile.ward_number && profile.polling_unit_id);
 
   const handleSubmitResult = async () => {
+    console.log("Submit result - profile:", profile, "isComplete:", isProfileComplete);
     if (!agent?.id || !isProfileComplete) {
       toast({ 
         title: "Cannot submit", 
@@ -146,11 +147,11 @@ export default function AgentDashboard() {
     });
 
     const ward = WARDS_DATA.find(w => w.wardNumber === agent.ward_number);
-    const pollingUnit = ward?.pollingUnits.find(pu => `${ward.wardNumber}-${pu.unitNumber}` === (agent as any).polling_unit_id);
+    const pollingUnit = ward?.pollingUnits.find(pu => `${ward.wardNumber}-${pu.unitNumber}` === agent.polling_unit_id);
 
     const { success, error } = await ElectionResultService.submitResult({
       agent_id: agent.id,
-      polling_unit_id: (agent as any).polling_unit_id,
+      polling_unit_id: agent.polling_unit_id,
       ward_id: agent.ward_number || "",
       election_type: result.election_type,
       total_registered_voters: result.total_registered_voters,
@@ -326,7 +327,9 @@ export default function AgentDashboard() {
                 <CardDescription>Enter the results from your polling unit</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {!isProfileComplete ? (
+                {loading ? (
+                  <div className="text-center py-8">Loading...</div>
+                ) : !isProfileComplete ? (
                   <div className="text-center py-8 text-amber-600">
                     <MapPin className="mx-auto h-12 w-12 mb-4" />
                     <p className="font-medium">Please complete your profile first</p>

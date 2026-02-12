@@ -31,6 +31,11 @@ export type Database = {
           verification_status: string
           ward_name: string | null
           ward_number: string | null
+          polling_unit_id: string | null
+          account_number: string | null
+          bank_name: string | null
+          agent_role: string | null
+          is_active: boolean | null
         }
         Insert: {
           created_at?: string
@@ -48,6 +53,11 @@ export type Database = {
           verification_status?: string
           ward_name?: string | null
           ward_number?: string | null
+          polling_unit_id?: string | null
+          account_number?: string | null
+          bank_name?: string | null
+          agent_role?: string | null
+          is_active?: boolean | null
         }
         Update: {
           created_at?: string
@@ -65,6 +75,11 @@ export type Database = {
           verification_status?: string
           ward_name?: string | null
           ward_number?: string | null
+          polling_unit_id?: string | null
+          account_number?: string | null
+          bank_name?: string | null
+          agent_role?: string | null
+          is_active?: boolean | null
         }
         Relationships: []
       }

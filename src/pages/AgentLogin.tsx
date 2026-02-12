@@ -8,10 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Lock, Phone, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PageLoading } from "@/components/LoadingState";
-import { AgentService, AgentsRow } from "@/services/agent.service";
+import { AgentService } from "@/services/agent.service";
 
 interface AgentContextType {
-  agent: AgentsRow | null;
+  agent: any;
   loading: boolean;
   loginByPhone: (phone: string) => Promise<{ success: boolean; error: string | null }>;
   loginByPin: (pin: string) => Promise<{ success: boolean; error: string | null }>;
@@ -22,7 +22,7 @@ interface AgentContextType {
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
 
 export function AgentProvider({ children }: { children: ReactNode }) {
-  const [agent, setAgent] = useState<AgentsRow | null>(null);
+  const [agent, setAgent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

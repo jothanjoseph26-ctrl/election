@@ -19,6 +19,9 @@ interface Agent {
   phone_number: string | null;
   ward_number: string | null;
   ward_name: string | null;
+  polling_unit_id: string | null;
+  account_number: string | null;
+  bank_name: string | null;
   pin: string;
   verification_status: string;
   payment_status: string;
@@ -38,7 +41,7 @@ export default function AgentDirectory() {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchAgents = async () => {
-    const { data } = await supabase.from("agents").select("*").order("ward_number").order("full_name");
+    const { data } = await supabase.from("agents").select("*, polling_unit_id, account_number, bank_name").order("ward_number").order("full_name");
     setAgents((data as Agent[]) ?? []);
   };
 
@@ -119,35 +122,28 @@ export default function AgentDirectory() {
                 <TableHead>Name</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Ward</TableHead>
-                <TableHead>PIN</TableHead>
+                <TableHead>Polling Unit</TableHead>
+                <TableHead>Account</TableHead>
+                <TableHead>Bank</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No agents found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No agents found</TableCell></TableRow>
               ) : (
                 filtered.map((agent) => (
                   <TableRow key={agent.id}>
                     <TableCell className="font-medium">{agent.full_name}</TableCell>
                     <TableCell>{agent.phone_number ?? "—"}</TableCell>
-                    <TableCell>{agent.ward_number ? `Ward ${agent.ward_number}` : "—"}{agent.ward_name ? ` (${agent.ward_name})` : ""}</TableCell>
-                    <TableCell className="font-mono">{agent.pin}</TableCell>
+                    <TableCell>{agent.ward_number ? `Ward ${agent.ward_number}` : "—"}</TableCell>
+                    <TableCell>{agent.polling_unit_id ? agent.polling_unit_id.split('-')[1] : "—"}</TableCell>
+                    <TableCell>{agent.account_number ?? "—"}</TableCell>
+                    <TableCell>{agent.bank_name ?? "—"}</TableCell>
                     <TableCell>
-                      <Badge variant={agent.verification_status === "verified" ? "default" : "outline"} className={agent.verification_status === "verified" ? "bg-success text-success-foreground" : ""}>
+                      <Badge variant={agent.verification_status === "verified" ? "default" : "outline"} className={agent.verification_status === "verified" ? "bg-green-500" : ""}>
                         {agent.verification_status}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => { setSelectedAgent(agent); }}>
-                          <Phone className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => { setSelectedAgent(agent); setReportOpen(true); }}>
-                          <FileText className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
                     </TableCell>
                   </TableRow>
                 ))

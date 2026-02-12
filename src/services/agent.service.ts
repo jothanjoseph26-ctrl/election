@@ -4,30 +4,30 @@ import type { Tables } from "@/integrations/supabase/types";
 export type AgentsRow = Tables<"agents">;
 
 export class AgentService {
-  static async loginByPhone(phoneNumber: string): Promise<{ agent: AgentsRow | null; error: string | null }> {
+  static async loginByPhone(phoneNumber: string): Promise<{ agent: any; error: string | null }> {
     const { data, error } = await supabase
       .from("agents")
-      .select("*")
+      .select("*, polling_unit_id, account_number, bank_name")
       .eq("phone_number", phoneNumber)
       .maybeSingle();
 
     if (error) return { agent: null, error: error.message };
     if (!data) return { agent: null, error: "Agent not found with this phone number" };
     
-    return { agent: data as AgentsRow, error: null };
+    return { agent: data, error: null };
   }
 
-  static async loginByPin(pin: string): Promise<{ agent: AgentsRow | null; error: string | null }> {
+  static async loginByPin(pin: string): Promise<{ agent: any; error: string | null }> {
     const { data, error } = await supabase
       .from("agents")
-      .select("*")
+      .select("*, polling_unit_id, account_number, bank_name")
       .eq("pin", pin)
       .maybeSingle();
 
     if (error) return { agent: null, error: error.message };
     if (!data) return { agent: null, error: "Invalid PIN" };
     
-    return { agent: data as AgentsRow, error: null };
+    return { agent: data, error: null };
   }
 
   static async updateProfile(
@@ -50,6 +50,9 @@ export class AgentService {
     if (updates.ward_number !== undefined) updateData.ward_number = updates.ward_number;
     if (updates.ward_name !== undefined) updateData.ward_name = updates.ward_name;
     if (updates.phone_number !== undefined) updateData.phone_number = updates.phone_number;
+    if (updates.polling_unit_id !== undefined) updateData.polling_unit_id = updates.polling_unit_id;
+    if (updates.account_number !== undefined) updateData.account_number = updates.account_number;
+    if (updates.bank_name !== undefined) updateData.bank_name = updates.bank_name;
 
     const { error } = await supabase
       .from("agents")
@@ -60,34 +63,34 @@ export class AgentService {
     return { success: true, error: null };
   }
 
-  static async getAgentById(agentId: string): Promise<AgentsRow | null> {
+  static async getAgentById(agentId: string): Promise<any | null> {
     const { data } = await supabase
       .from("agents")
-      .select("*")
+      .select("*, polling_unit_id, account_number, bank_name")
       .eq("id", agentId)
       .maybeSingle();
     
-    return data as AgentsRow | null;
+    return data;
   }
 
-  static async getAllAgents(): Promise<AgentsRow[]> {
+  static async getAllAgents(): Promise<any[]> {
     const { data } = await supabase
       .from("agents")
-      .select("*")
+      .select("*, polling_unit_id, account_number, bank_name")
       .order("ward_name", { ascending: true })
       .order("full_name", { ascending: true });
     
-    return (data || []) as AgentsRow[];
+    return data || [];
   }
 
-  static async getAgentsByWard(wardNumber: string): Promise<AgentsRow[]> {
+  static async getAgentsByWard(wardNumber: string): Promise<any[]> {
     const { data } = await supabase
       .from("agents")
-      .select("*")
+      .select("*, polling_unit_id, account_number, bank_name")
       .eq("ward_number", wardNumber)
       .order("full_name", { ascending: true });
     
-    return (data || []) as AgentsRow[];
+    return data || [];
   }
 
   static async getAgentWithDetails(agentId: string) {
