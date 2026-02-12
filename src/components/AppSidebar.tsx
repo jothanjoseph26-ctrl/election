@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Shield, LayoutDashboard, Users, Upload, FileText, CreditCard, Megaphone, MessageSquare, Search as SearchIcon, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Upload, FileText, CreditCard, Megaphone, MessageSquare, Search as SearchIcon, LogOut, Vote, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -24,6 +24,9 @@ const navItems = [
   { title: "Payments", icon: CreditCard, path: "/payments", roles: ["admin"] },
   { title: "Broadcasts", icon: Megaphone, path: "/broadcasts", roles: ["admin"] },
   { title: "WhatsApp", icon: MessageSquare, path: "/whatsapp", roles: ["admin"] },
+  { title: "Election Results", icon: Vote, path: "/election-results", roles: ["admin", "operator"] },
+  { title: "Ward Portal", icon: Building, path: "/ward-portal", roles: ["admin", "operator"] },
+  { title: "Agent Portal", icon: Users, path: "/agent/login", roles: ["admin", "operator"] },
 ];
 
 export function AppSidebar() {

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AgentProvider } from "@/pages/AgentLogin";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login";
@@ -13,9 +14,13 @@ import ImportAgents from "./pages/ImportAgents";
 import Reports from "./pages/Reports";
 import Payments from "./pages/Payments";
 import Broadcasts from "./pages/Broadcasts";
- import NotFound from "./pages/NotFound";
- import Search from "./pages/Search";
- import WhatsApp from "./pages/WhatsApp";
+import NotFound from "./pages/NotFound";
+import Search from "./pages/Search";
+import WhatsApp from "./pages/WhatsApp";
+import AgentLogin from "./pages/AgentLogin";
+import AgentDashboard from "./pages/AgentDashboard";
+import ElectionResults from "./pages/ElectionResults";
+import WardPortal from "./pages/WardPortal";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +32,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
+            <AgentProvider>
+              <Routes>
               <Route path="/login" element={<Login />} />
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
@@ -38,9 +44,14 @@ const App = () => (
                <Route path="/broadcasts" element={<Broadcasts />} />
                <Route path="/whatsapp" element={<WhatsApp />} />
                <Route path="/search" element={<Search />} />
+               <Route path="/election-results" element={<ElectionResults />} />
+               <Route path="/ward-portal" element={<WardPortal />} />
             </Route>
+            <Route path="/agent/login" element={<AgentLogin />} />
+            <Route path="/agent/dashboard" element={<AgentDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </AgentProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

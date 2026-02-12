@@ -332,6 +332,58 @@ export type Enums<
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
+export type WardsRow = {
+  created_at: string
+  id: string
+  lga: string
+  updated_at: string
+  ward_name: string
+  ward_number: string
+}
+
+export type PollingUnitsRow = {
+  created_at: string
+  id: string
+  location: string | null
+  unit_name: string
+  unit_number: string
+  updated_at: string
+  ward_id: string
+}
+
+export type ElectionResultsRow = {
+  agent_id: string | null
+  created_at: string
+  election_type: string
+  id: string
+  invalid_votes: number
+  notes: string | null
+  party_results: Json
+  polling_unit_id: string | null
+  result_image_public_id: string | null
+  result_image_url: string | null
+  status: string
+  submitted_at: string
+  total_accredited_voters: number
+  total_registered_voters: number
+  total_votes_cast: number
+  updated_at: string
+  valid_votes: number
+  verified_at: string | null
+  verified_by: string | null
+  ward_id: string | null
+}
+
+export type WardAdminsRow = {
+  created_at: string
+  id: string
+  is_active: boolean
+  role: string
+  updated_at: string
+  user_id: string
+  ward_id: string
+}
+
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
