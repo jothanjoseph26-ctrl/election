@@ -26,6 +26,7 @@ const navItems = [
   { title: "WhatsApp", icon: MessageSquare, path: "/whatsapp", roles: ["admin"] },
   { title: "Election Results", icon: Vote, path: "/election-results", roles: ["admin", "operator"] },
   { title: "Ward Portal", icon: Building, path: "/ward-portal", roles: ["admin", "operator"] },
+  { title: "Situation Intake", icon: AlertTriangle, path: "/situation-intake", roles: ["admin", "operator"] },
   { title: "Emergency Result Entry", icon: AlertTriangle, path: "/emergency-result", roles: ["admin", "operator"] },
   { title: "Admin - Login as Agent", icon: UserCog, path: "/admin/impersonate-agent", roles: ["admin"] },
   { title: "Agent Portal", icon: Users, path: "/agent/login", roles: ["admin", "operator"] },
