@@ -208,7 +208,7 @@ export default function EmergencyResultInput() {
 
     setSubmitting(true);
 
-    const agentId = selectedAgent?.id || "admin-manual-entry";
+    const agentId = selectedAgent?.id ?? null;
 
     const partyVotes: Record<string, number> = {};
     NIGERIAN_PARTIES.forEach(party => {

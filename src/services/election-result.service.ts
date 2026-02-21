@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export class ElectionResultService {
   static async submitResult(data: {
-    agent_id: string;
+    agent_id: string | null;
     polling_unit_id: string;
     ward_id: string;
     election_type: string;
@@ -51,6 +51,7 @@ export class ElectionResultService {
       .from("election_results")
       .insert({
         ...data,
+        agent_id: data.agent_id ?? null,
         ward_id: wardUuid,
         polling_unit_id: pollingUnitUuid
       })
