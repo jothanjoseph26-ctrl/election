@@ -27,3 +27,4 @@ dist-ssr
 mobile-app/
 
 .vercel
+.env*.local
