@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
+import { createWorker } from "tesseract.js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Loader2, Upload, Camera, FileText, Check, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,99 +22,145 @@ interface ResultScannerProps {
   onExtract: (result: ExtractedResult) => void;
 }
 
+const NIGERIAN_PARTIES = [
+  { code: "APC", name: "All Progressives Congress" },
+  { code: "PDP", name: "People's Democratic Party" },
+  { code: "LP", name: "Labour Party" },
+  { code: "NNPP", name: "New Nigeria People's Party" },
+  { code: "APGA", name: "All Progressives Grand Alliance" },
+  { code: "ADC", name: "African Democratic Congress" },
+  { code: "SDP", name: "Social Democratic Party" },
+  { code: "AA", name: "Action Alliance" },
+];
+
 export default function ResultScanner({ onExtract }: ResultScannerProps) {
   const { toast } = useToast();
   const [scanning, setScanning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<ExtractedResult | null>(null);
   const [manualInput, setManualInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const parseExtractedText = (text: string): ExtractedResult => {
+    const result: ExtractedResult = {
+      partyResults: {}
+    };
+
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+
+    for (const line of lines) {
+      const upperLine = line.toUpperCase();
+      
+      if (upperLine.includes("REGISTERED") || upperLine.includes("TOTAL REGISTERED")) {
+        const match = line.match(/\d+/);
+        if (match) result.totalRegistered = parseInt(match[0].replace(/,/g, ""));
+      }
+      if (upperLine.includes("ACCREDITED")) {
+        const match = line.match(/\d+/);
+        if (match) result.totalAccredited = parseInt(match[0].replace(/,/g, ""));
+      }
+      if (upperLine.includes("VOTES CAST") || upperLine.includes("TOTAL VOTES")) {
+        const match = line.match(/\d+/);
+        if (match) result.totalVotesCast = parseInt(match[0].replace(/,/g, ""));
+      }
+      if (upperLine.includes("VALID")) {
+        const match = line.match(/\d+/);
+        if (match) result.validVotes = parseInt(match[0].replace(/,/g, ""));
+      }
+      if (upperLine.includes("INVALID") || upperLine.includes("REJECTED")) {
+        const match = line.match(/\d+/);
+        if (match) result.invalidVotes = parseInt(match[0].replace(/,/g, ""));
+      }
+
+      for (const party of NIGERIAN_PARTIES) {
+        if (upperLine.includes(party.code) || upperLine.includes(party.name.toUpperCase())) {
+          const matches = line.match(/\d+/g);
+          if (matches && matches.length > 0) {
+            const voteCount = parseInt(matches[matches.length - 1].replace(/,/g, ""));
+            if (voteCount > 0 && voteCount < 1000000) {
+              result.partyResults = result.partyResults || {};
+              result.partyResults[party.code] = voteCount;
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
-        simulateOCR(file);
+        setExtractedData(null);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const simulateOCR = async (file: File) => {
-    setScanning(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const mockExtracted: ExtractedResult = {
-      totalRegistered: Math.floor(Math.random() * 500) + 500,
-      totalAccredited: Math.floor(Math.random() * 400) + 200,
-      totalVotesCast: Math.floor(Math.random() * 300) + 150,
-      validVotes: Math.floor(Math.random() * 280) + 140,
-      invalidVotes: Math.floor(Math.random() * 20) + 5,
-      partyResults: {
-        "APC": Math.floor(Math.random() * 200) + 100,
-        "PDP": Math.floor(Math.random() * 150) + 50,
-        "LP": Math.floor(Math.random() * 80) + 20,
-        "NNPP": Math.floor(Math.random() * 30) + 5,
-        "APGA": Math.floor(Math.random() * 15),
-        "ADC": Math.floor(Math.random() * 10),
-        "SDP": Math.floor(Math.random() * 8),
-        "AA": Math.floor(Math.random() * 5),
-      },
-      rawText: "Simulated OCR extracted text from result sheet...",
-    };
+  const handleScan = async () => {
+    if (!imagePreview) return;
 
-    setExtractedData(mockExtracted);
-    setScanning(false);
-    toast({ title: "Scan complete", description: "Results extracted from image" });
+    setScanning(true);
+    setProgress(0);
+    setStatus("Initializing OCR engine...");
+
+    try {
+      const worker = await createWorker("eng", 1, {
+        logger: (m) => {
+          if (m.status === "recognizing text") {
+            setProgress(Math.round(m.progress * 100));
+            setStatus(`Scanning... ${Math.round(m.progress * 100)}%`);
+          } else {
+            setStatus(m.status);
+          }
+        },
+      });
+
+      setStatus("Processing image...");
+      const { data: { text } } = await worker.recognize(imagePreview);
+      
+      setStatus("Parsing results...");
+      const parsed = parseExtractedText(text);
+      parsed.rawText = text;
+      
+      setExtractedData(parsed);
+      setStatus("Scan complete!");
+
+      if (Object.keys(parsed.partyResults || {}).length === 0 && !parsed.totalVotesCast) {
+        toast({
+          title: "Low confidence scan",
+          description: "Could not automatically detect results. Please check the raw text or enter manually.",
+        });
+      } else {
+        toast({
+          title: "Scan complete",
+          description: `Detected ${Object.keys(parsed.partyResults || {}).length} party results`,
+        });
+      }
+
+      await worker.terminate();
+    } catch (error) {
+      console.error("OCR Error:", error);
+      toast({
+        title: "Scan failed",
+        description: "Could not process the image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setScanning(false);
+    }
   };
 
   const handleManualParse = () => {
     if (!manualInput.trim()) return;
 
-    const lines = manualInput.split("\n");
-    const extracted: ExtractedResult = {
-      partyResults: {}
-    };
-
-    lines.forEach(line => {
-      const upperLine = line.toUpperCase();
-      
-      if (upperLine.includes("REGISTERED") || upperLine.includes("TOTAL REGISTERED")) {
-        const match = line.match(/\d+/);
-        if (match) extracted.totalRegistered = parseInt(match[0]);
-      }
-      if (upperLine.includes("ACCREDITED")) {
-        const match = line.match(/\d+/);
-        if (match) extracted.totalAccredited = parseInt(match[0]);
-      }
-      if (upperLine.includes("VOTES CAST") || upperLine.includes("TOTAL VOTES")) {
-        const match = line.match(/\d+/);
-        if (match) extracted.totalVotesCast = parseInt(match[0]);
-      }
-      if (upperLine.includes("VALID")) {
-        const match = line.match(/\d+/);
-        if (match) extracted.validVotes = parseInt(match[0]);
-      }
-      if (upperLine.includes("INVALID")) {
-        const match = line.match(/\d+/);
-        if (match) extracted.invalidVotes = parseInt(match[0]);
-      }
-
-      const parties = ["APC", "PDP", "LP", "NNPP", "APGA", "ADC", "SDP", "AA"];
-      parties.forEach(party => {
-        if (upperLine.includes(party)) {
-          const match = line.match(/\d+/);
-          if (match) {
-            extracted.partyResults = extracted.partyResults || {};
-            extracted.partyResults[party] = parseInt(match[0]);
-          }
-        }
-      });
-    });
-
+    const extracted = parseExtractedText(manualInput);
     setExtractedData(extracted);
     toast({ title: "Text parsed", description: "Results extracted from text input" });
   };
@@ -128,6 +176,8 @@ export default function ResultScanner({ onExtract }: ResultScannerProps) {
     setImagePreview(null);
     setExtractedData(null);
     setManualInput("");
+    setProgress(0);
+    setStatus("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -140,7 +190,7 @@ export default function ResultScanner({ onExtract }: ResultScannerProps) {
           <Camera className="mr-2 h-5 w-5" />
           Scan Result Sheet
         </CardTitle>
-        <CardDescription>Upload an image or paste text to extract results</CardDescription>
+        <CardDescription>Upload an image or paste text to extract results using AI OCR</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -150,9 +200,12 @@ export default function ResultScanner({ onExtract }: ResultScannerProps) {
                 <div className="space-y-4">
                   <img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded" />
                   {scanning ? (
-                    <div className="flex items-center justify-center text-primary">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Scanning...
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center text-primary">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <span>{status}</span>
+                      </div>
+                      <Progress value={progress} className="w-full" />
                     </div>
                   ) : (
                     <Button variant="outline" size="sm" onClick={handleClear}>
@@ -180,6 +233,13 @@ export default function ResultScanner({ onExtract }: ResultScannerProps) {
                 </div>
               )}
             </div>
+
+            {!scanning && imagePreview && (
+              <Button onClick={handleScan} className="w-full">
+                <Camera className="mr-2 h-4 w-4" />
+                Scan with AI
+              </Button>
+            )}
 
             <div className="space-y-2">
               <Label>Or paste result text</Label>
@@ -229,6 +289,15 @@ export default function ResultScanner({ onExtract }: ResultScannerProps) {
                 <Button onClick={handleUseExtracted} className="w-full mt-3">
                   Use These Results
                 </Button>
+
+                {extractedData.rawText && (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-gray-500">View raw extracted text</summary>
+                    <pre className="mt-2 p-2 bg-gray-100 rounded overflow-x-auto whitespace-pre-wrap">
+                      {extractedData.rawText}
+                    </pre>
+                  </details>
+                )}
               </div>
             ) : (
               <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">

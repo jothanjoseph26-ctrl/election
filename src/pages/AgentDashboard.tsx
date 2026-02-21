@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, MapPin, Vote, Save, LogOut, CheckCircle } from "lucide-react";
+import { User, MapPin, Vote, Save, LogOut, CheckCircle, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PageLoading } from "@/components/LoadingState";
+import ResultScanner from "@/components/ResultScanner";
 
 const NIGERIAN_PARTIES = [
   { code: "APC", name: "All Progressives Congress" },
@@ -57,13 +58,40 @@ export default function AgentDashboard() {
 
   const [partyResults, setPartyResults] = useState<Record<string, string>>({});
 
+  const handleScanExtract = (extracted: any) => {
+    if (extracted.totalRegistered) {
+      setResult(r => ({ ...r, total_registered_voters: extracted.totalRegistered }));
+    }
+    if (extracted.totalAccredited) {
+      setResult(r => ({ ...r, total_accredited_voters: extracted.totalAccredited }));
+    }
+    if (extracted.totalVotesCast) {
+      setResult(r => ({ ...r, total_votes_cast: extracted.totalVotesCast }));
+    }
+    if (extracted.validVotes) {
+      setResult(r => ({ ...r, valid_votes: extracted.validVotes }));
+    }
+    if (extracted.invalidVotes) {
+      setResult(r => ({ ...r, invalid_votes: extracted.invalidVotes }));
+    }
+    if (extracted.partyResults) {
+      setPartyResults(extracted.partyResults);
+    }
+    toast({ title: "Results imported", description: "Scanned data applied to form" });
+  };
+
   useEffect(() => {
     if (!agent) {
       navigate("/agent/login");
       return;
     }
-    loadData();
-  }, [agent]);
+  }, [agent, navigate]);
+
+  useEffect(() => {
+    if (agent) {
+      loadData();
+    }
+  }, [agent?.ward_number, agent?.polling_unit_id]);
 
   const loadData = () => {
     setLoading(true);
@@ -111,11 +139,7 @@ export default function AgentDashboard() {
 
     if (success) {
       await refreshAgent();
-      setTimeout(async () => {
-        await refreshAgent();
-        window.location.reload();
-      }, 500);
-      toast({ title: "Profile updated", description: "Profile saved successfully. Reloading..." });
+      toast({ title: "Profile updated", description: "Profile saved successfully." });
     } else {
       toast({ title: "Update failed", description: error, variant: "destructive" });
     }
@@ -212,8 +236,9 @@ export default function AgentDashboard() {
         </div>
 
         <Tabs defaultValue="profile">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">My Profile</TabsTrigger>
+            <TabsTrigger value="scan">Scan Result</TabsTrigger>
             <TabsTrigger value="results">Submit Results</TabsTrigger>
           </TabsList>
 
@@ -313,6 +338,31 @@ export default function AgentDashboard() {
                   <Save className="mr-2 h-4 w-4" />
                   {saving ? "Saving..." : "Save Profile"}
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="scan">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Camera className="mr-2 h-5 w-5" />
+                  Scan Result Sheet
+                </CardTitle>
+                <CardDescription>
+                  Take a photo or upload an image of the result sheet to automatically extract results
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isProfileComplete ? (
+                  <ResultScanner onExtract={handleScanExtract} />
+                ) : (
+                  <div className="text-center py-8 text-amber-600">
+                    <MapPin className="mx-auto h-12 w-12 mb-4" />
+                    <p className="font-medium">Please complete your profile first</p>
+                    <p className="text-sm">Select your Ward and Polling Unit in the Profile tab before scanning results.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

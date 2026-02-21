@@ -141,8 +141,8 @@ export default function AgentLogin() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
-            <User className="h-7 w-7 text-primary-foreground" />
+          <div className="mx-auto mb-3">
+            <img src="/logo.png" alt="AMAC" className="h-16 w-auto mx-auto" />
           </div>
           <CardTitle className="text-2xl font-bold">Agent Portal</CardTitle>
           <CardDescription>Login with phone number or PIN</CardDescription>

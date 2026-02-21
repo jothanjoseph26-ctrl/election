@@ -123,6 +123,7 @@ export default function AgentDirectory() {
                 <TableHead>Phone</TableHead>
                 <TableHead>Ward</TableHead>
                 <TableHead>Polling Unit</TableHead>
+                <TableHead>PIN</TableHead>
                 <TableHead>Account</TableHead>
                 <TableHead>Bank</TableHead>
                 <TableHead>Status</TableHead>
@@ -130,7 +131,7 @@ export default function AgentDirectory() {
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No agents found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No agents found</TableCell></TableRow>
               ) : (
                 filtered.map((agent) => (
                   <TableRow key={agent.id}>
@@ -138,6 +139,7 @@ export default function AgentDirectory() {
                     <TableCell>{agent.phone_number ?? "—"}</TableCell>
                     <TableCell>{agent.ward_number ? `Ward ${agent.ward_number}` : "—"}</TableCell>
                     <TableCell>{agent.polling_unit_id ? agent.polling_unit_id.split('-')[1] : "—"}</TableCell>
+                    <TableCell className="font-mono">{agent.pin ?? "—"}</TableCell>
                     <TableCell>{agent.account_number ?? "—"}</TableCell>
                     <TableCell>{agent.bank_name ?? "—"}</TableCell>
                     <TableCell>
