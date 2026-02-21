@@ -37,22 +37,22 @@ const App = () => (
             <AgentProvider>
               <Routes>
               <Route path="/login" element={<Login />} />
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/agents" element={<AgentDirectory />} />
-              <Route path="/import" element={<ImportAgents />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/payments" element={<Payments />} />
-               <Route path="/broadcasts" element={<Broadcasts />} />
-               <Route path="/whatsapp" element={<WhatsApp />} />
-               <Route path="/search" element={<Search />} />
-               <Route path="/election-results" element={<ElectionResults />} />
-               <Route path="/ward-portal" element={<WardPortal />} />
-            </Route>
-            <Route path="/agent/login" element={<AgentLogin />} />
-            <Route path="/agent/dashboard" element={<AgentDashboard />} />
-            <Route path="/emergency-result" element={<EmergencyResultInput />} />
-            <Route path="/admin/impersonate-agent" element={<AdminImpersonateAgent />} />
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/agents" element={<AgentDirectory />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/election-results" element={<ElectionResults />} />
+                <Route path="/ward-portal" element={<WardPortal />} />
+                <Route path="/search" element={<Search />} />
+              </Route>
+              <Route path="/agent/login" element={<AgentLogin />} />
+              <Route path="/agent/dashboard" element={<AgentDashboard />} />
+              <Route path="/emergency-result" element={<EmergencyResultInput />} />
+              <Route path="/admin/impersonate-agent" element={<AdminImpersonateAgent />} />
+              <Route path="/admin/import" element={<ImportAgents />} />
+              <Route path="/admin/payments" element={<Payments />} />
+              <Route path="/admin/broadcasts" element={<Broadcasts />} />
+              <Route path="/admin/whatsapp" element={<WhatsApp />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </AgentProvider>
