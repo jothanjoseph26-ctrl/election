@@ -197,15 +197,6 @@ export default function EmergencyResultInput() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedAgent) {
-      toast({
-        title: "Error",
-        description: "Please select an agent to submit result for",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!formData.ward_number || !formData.polling_unit_id) {
       toast({
         title: "Error",
@@ -217,6 +208,8 @@ export default function EmergencyResultInput() {
 
     setSubmitting(true);
 
+    const agentId = selectedAgent?.id || "admin-manual-entry";
+
     const partyVotes: Record<string, number> = {};
     NIGERIAN_PARTIES.forEach(party => {
       const votes = partyResults[party.code];
@@ -226,7 +219,7 @@ export default function EmergencyResultInput() {
     });
 
     const { success, error } = await ElectionResultService.submitResult({
-      agent_id: selectedAgent.id,
+      agent_id: agentId,
       polling_unit_id: formData.polling_unit_id,
       ward_id: formData.ward_number,
       election_type: formData.election_type,
@@ -236,13 +229,13 @@ export default function EmergencyResultInput() {
       valid_votes: formData.valid_votes,
       invalid_votes: formData.invalid_votes,
       party_results: partyVotes,
-      notes: formData.notes,
+      notes: selectedAgent ? formData.notes : `Admin manual entry for ${formData.ward_number}/${formData.polling_unit_id}`,
     });
 
     if (success) {
       toast({
         title: "Result submitted",
-        description: `Successfully submitted for ${selectedAgent.full_name}`,
+        description: selectedAgent ? `Successfully submitted for ${selectedAgent.full_name}` : "Successfully submitted (admin manual entry)",
       });
       setFormData({
         ward_number: "",
@@ -519,7 +512,7 @@ export default function EmergencyResultInput() {
 
                 <Button 
                   onClick={handleSubmit} 
-                  disabled={submitting || !selectedAgent}
+                  disabled={submitting}
                   className="w-full bg-green-600 hover:bg-green-700"
                   size="lg"
                 >
