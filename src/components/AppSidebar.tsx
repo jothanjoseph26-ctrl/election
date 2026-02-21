@@ -32,11 +32,13 @@ const navItems = [
 ];
 
 export function AppSidebar() {
-  const { role, profile, signOut } = useAuth();
+  const { user, role, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const filtered = navItems.filter((item) => role && item.roles.includes(role));
+  const filtered = role
+    ? navItems.filter((item) => item.roles.includes(role))
+    : navItems;
 
   return (
     <Sidebar>
@@ -76,13 +78,15 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4">
         <div className="mb-2 text-xs text-sidebar-foreground/60">
-          <p className="font-medium text-sidebar-foreground">{profile?.full_name}</p>
-          <p className="capitalize">{role}</p>
+          <p className="font-medium text-sidebar-foreground">{profile?.full_name || "Public Access"}</p>
+          <p className="capitalize">{role || "open mode"}</p>
         </div>
-        <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/60" onClick={signOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
-        </Button>
+        {user && (
+          <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/60" onClick={signOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
