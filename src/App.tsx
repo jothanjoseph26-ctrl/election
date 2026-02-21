@@ -21,6 +21,8 @@ import AgentLogin from "./pages/AgentLogin";
 import AgentDashboard from "./pages/AgentDashboard";
 import ElectionResults from "./pages/ElectionResults";
 import WardPortal from "./pages/WardPortal";
+import EmergencyResultInput from "./pages/EmergencyResultInput";
+import AdminImpersonateAgent from "./pages/AdminImpersonateAgent";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,8 @@ const App = () => (
             </Route>
             <Route path="/agent/login" element={<AgentLogin />} />
             <Route path="/agent/dashboard" element={<AgentDashboard />} />
+            <Route path="/emergency-result" element={<EmergencyResultInput />} />
+            <Route path="/admin/impersonate-agent" element={<AdminImpersonateAgent />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </AgentProvider>

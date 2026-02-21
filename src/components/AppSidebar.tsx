@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Shield, LayoutDashboard, Users, Upload, FileText, CreditCard, Megaphone, MessageSquare, Search as SearchIcon, LogOut, Vote, Building } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Upload, FileText, CreditCard, Megaphone, MessageSquare, Search as SearchIcon, LogOut, Vote, Building, AlertTriangle, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -26,6 +26,8 @@ const navItems = [
   { title: "WhatsApp", icon: MessageSquare, path: "/whatsapp", roles: ["admin"] },
   { title: "Election Results", icon: Vote, path: "/election-results", roles: ["admin", "operator"] },
   { title: "Ward Portal", icon: Building, path: "/ward-portal", roles: ["admin", "operator"] },
+  { title: "Emergency Result Entry", icon: AlertTriangle, path: "/emergency-result", roles: ["admin", "operator"] },
+  { title: "Admin - Login as Agent", icon: UserCog, path: "/admin/impersonate-agent", roles: ["admin"] },
   { title: "Agent Portal", icon: Users, path: "/agent/login", roles: ["admin", "operator"] },
 ];
 
