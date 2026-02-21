@@ -25,3 +25,5 @@ dist-ssr
 
 # mobile-app (separate repository)
 mobile-app/
+
+.vercel
